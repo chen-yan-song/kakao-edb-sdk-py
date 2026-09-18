@@ -1,0 +1,13 @@
+# kakao-edb-sdk-py 运行零 pip 依赖（全部走标准库 + 外部 sqlcipher3 可执行文件）。
+#
+# 外部二进制依赖（不在 pip 里）：
+#   macOS:  brew install sqlcipher
+#   Windows: choco install sqlcipher   或   scoop install sqlcipher
+#   Linux:  apt install sqlcipher
+#
+# 可选：Windows 内存取钥使用 pywin32 提升稳定性（未安装时回退纯 ctypes）
+#   pip install pywin32 ; 仅 Windows
+#
+# 可选：Windows 内存取钥的「进程内 AES 页头预筛」加速（未安装时自动降级为
+#   逐个 sqlcipher 子进程验证，正确性不受影响，仅慢一些）
+#   pip install cryptography

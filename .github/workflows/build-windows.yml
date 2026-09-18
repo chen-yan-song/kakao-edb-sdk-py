@@ -1,0 +1,71 @@
+name: build-windows
+
+# 触发方式：
+#   - 手动：Actions 页面 "Run workflow"，或 `gh workflow run build-windows.yml`
+#   - push 到 main：自动构建
+#   - 打 tag（v*）：构建并自动创建 GitHub Release
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    tags: ['v*']
+
+permissions:
+  contents: write   # 创建 Release 需要
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 下载静态链接的 sqlcipher.exe（无 DLL 依赖，单文件随包）
+      # 来源：https://github.com/Katecca/sqlcipher-static-binary （SQLCipher v4+，x86_64）
+      # 如需替换为自己的可信来源，改下面 URL 即可；或本地把 sqlcipher.exe 放进 bin/ 后提交。
+      - name: Download sqlcipher static binary
+        shell: bash
+        run: |
+          mkdir -p bin
+          curl -fL -o bin/sqlcipher.exe \
+            https://raw.githubusercontent.com/Katecca/sqlcipher-static-binary/master/windows/x86_64/sqlcipher.exe
+          ls -la bin/
+          echo "sha256: $(sha256sum bin/sqlcipher.exe | cut -d' ' -f1)"
+
+      - name: Smoke-test sqlcipher
+        shell: cmd
+        run: |
+          echo SELECT 1; | bin\sqlcipher.exe || echo "[warn] sqlcipher 自检未通过（不阻塞，打包继续）"
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller cryptography
+
+      - name: Build exe (PyInstaller onefile)
+        run: |
+          python -m PyInstaller --noconfirm KakaoChatExport.spec
+
+      - name: List dist
+        shell: cmd
+        run: dir dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: KakaoChatExport-windows
+          path: dist/KakaoChatExport.exe
+          if-no-files-found: error
+
+      # 仅打 tag（v*）时创建 Release 并附上 exe
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/KakaoChatExport.exe
+          generate_release_notes: true

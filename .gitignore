@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# PyInstaller 产物
+build/
+dist/
+
+# 虚拟环境
+.venv/
+venv/
+
+# CI 下载的 sqlcipher 二进制（不入库；本地需要时自行放 bin/，或 git add -f 强制提交可信副本）
+bin/
+
+# 导出产物
+KakaoChat_导出_*/
+
+# 系统
+.DS_Store
+Thumbs.db

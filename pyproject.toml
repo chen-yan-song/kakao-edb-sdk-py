@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kakao-edb-sdk"
+version = "0.1.0"
+description = "KakaoTalk 本地聊天数据库解密 SDK 的 Python 版本（Windows 两步流 / macOS 全自动派生）"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "chenyan" }]
+dependencies = []
+
+[project.optional-dependencies]
+# Windows 内存取钥需要 pywin32（可选；未安装时回退到纯 ctypes）
+win = ["pywin32>=306"]
+dev = ["pytest>=7"]
+
+[project.scripts]
+kakao-edb = "kakao_edb.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["kakao_edb*"]
